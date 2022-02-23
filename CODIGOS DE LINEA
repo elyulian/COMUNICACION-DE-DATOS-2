@@ -1,0 +1,369 @@
+% Button pushed function: GraficarButton
+        function GraficarButtonPushed(app, event)
+            %asignarValores(app);
+
+            %recogemos los datos
+            bit_1= app.bit1.Value;
+            bit_2= app.bit2.Value;
+            bit_3= app.bit3.Value;
+            bit_4= app.bit4.Value;
+            bit_5= app.bit5.Value;
+            bit_6= app.bit6.Value;
+            bit_7= app.bit7.Value;
+            bit_8= app.bit8.Value;
+            bit_9= app.bit9.Value;
+            bit_10= app.bit10.Value;
+            bit_11= app.bit11.Value;
+            bit_12= app.bit12.Value;
+            bit_13= app.bit13.Value;
+            bit_14=app.bit13.Value;
+            bit_15=app.bit14.Value;
+            bit_16=app.bit16.Value;
+            tiempo = app.TiempoEditField.Value;
+            h=[bit_1 bit_2 bit_3 bit_4 bit_5 bit_6 bit_7 bit_8 bit_9 bit_10 bit_11 bit_12 bit_13 bit_14 bit_15 bit_16];
+            disp(h);
+           %ARREGLOS PARA GRAFICAR EL AXIS
+            cadenay=[];
+            cadenat=[];
+            
+            %CONTADORES
+            contadorA=0;
+            contadorB=0;
+            
+            senal= app.TIPODESEALDropDown.Value;
+            switch senal
+                case 'PSEUDOTERNARIO'
+                                        pulse = 5;
+                    % assume that current pulse level is a "low" pulse (binary 0)
+                    % this is the pulse level for the bit before given bitstream
+                    current_level = -pulse;
+                     
+                    for bit = 1:length(h)
+                        % set bit time
+                        bt=bit-1:tiempo:bit;
+                        cadenat=[cadenat bit-1:tiempo:bit];
+                        
+                        if h(bit) == 0
+                            % in pseudoternary, 0 denotes a change in signal levels
+                            current_level = -current_level;
+                            y = (bt<bit) * current_level;
+                            cadenay=[cadenay y];
+                            
+                            if mod(contadorB,2)==0
+                               disp('El número es Par')
+                               contadorA=contadorA+1;
+                        else
+                            disp('El número es IMPar')
+                         contadorB=contadorB+1;
+                            end
+                            
+                                 
+                        else
+                            % binary 1 is mapped to zero
+                            y = zeros(size(bt));
+                             cadenay=[cadenay y];
+                        end
+                     
+                        % assign last pulse point by inspecting the following bit
+                        try
+                            if h(bit+1) == 0
+                                y(end) = -current_level;
+                               
+                                disp('ones');
+                            end
+                        catch e
+                            % bitstream end; assume next bit is 0
+                            y(end) = -current_level;
+                            
+                            disp('zero');
+
+                        end
+                        % draw pulse
+                        plot(bt, y,'r', 'LineWidth', 2.5);
+                        %text(bit-0.5, pulse+2, num2str(h(bit)),'FontWeight', 'bold')
+                        hold on;
+                    end
+                    % draw grid
+                    grid on;
+                    axis([0 length(h) -pulse*2 pulse*2]);
+                    set(gca,'YTick', [-pulse 0 pulse])
+                    set(gca,'XTick', 1:length(h))
+                    set(gca,'XTickLabel', '')
+                    title('Code Line Pseudoternario ', num2str(h(:).'));
+                     
+                    
+                    
+                
+                case 'NRZ-I'
+                  
+                    n=1;
+                    l=length(h);
+                    disp(l)
+                    h(l+1)=1;
+                    while n<=length(h)-1
+                     
+                        t=n-1:tiempo:n;
+                        cadenat=[cadenat n-1:tiempo:n];
+
+                        if h(n) == 0
+                     
+                            if h(n+1)==0
+                     
+                                y=(t>n);
+                     
+                            else
+                               y=(t==n);
+                     
+                            end
+                     
+                            d=plot(t,y,'r');grid on;
+                            title('NRZ-I');
+                            set(d,'LineWidth',2.5);
+                            hold on;
+                            axis([0 length(h)-1 -1.5 1.5]);
+                            disp('zero');
+                            cadenay=[cadenay y];
+                    
+                        else
+                     
+                            if h(n+1)==0
+                                y=(t<n)-0*(t==n);
+                            else
+                     
+                                y=(t<n)+1*(t==n);
+                     
+                            end
+                     
+                            d=plot(t,y,'y');grid on;
+                            title('UNIPOLAR NRZI', num2str(h(:).'));
+                            set(d,'LineWidth',2.5);
+                            hold on;
+                            axis([0 length(h)-1 -1.5 1.5]);
+                            disp('ones');
+                            cadenay=[cadenay y];
+                            
+                            
+                        if mod(contadorB,2)==0
+                               disp('El número es Par')
+                               contadorA=contadorA+1;
+                        else
+                            disp('El número es IMPar')
+                         contadorB=contadorB+1;
+                        end
+                            
+                            
+                        end
+                     
+                        n=n+1;
+                    end
+      
+                    
+                    
+                case 'BIPOLAR AMI'
+                    %bipolarAmi(cadenaBits,tiempo);
+                    n=1;
+                    l=length(h);
+                    h(l+1)=1;
+                    ami=-1;
+                    contadorB=1;
+                    while n<=length(h)-1
+                        t=n-1:tiempo:n;
+                        cadenat=[cadenat n-1:tiempo:n];
+                    if h(n) == 0
+                        if h(n+1)==0 
+                            y=(t>n);
+                        else
+                            if ami==1
+                                y=-(t==n);
+                            else
+                                y=(t==n);
+                            end
+                        end
+                    
+                        d=plot(t,y,'b');grid on;
+                        title('BIPOLAR AMI');
+                        set(d,'LineWidth',2.5);
+                        hold on;
+                        axis([0 length(h)-1 -1.5 1.5]);
+                        disp('zero');
+                         cadenay=[cadenay y];
+                    else
+                    
+                        ami=ami*-1;
+                        if h(n+1)==0
+                            if ami==1
+                                y=(t<n);
+                            else
+                                y=-(t<n);
+                            end
+                        else
+                            if ami==1
+                                y=(t<n)-(t==n);
+                            else
+                                y=-(t<n)+(t==n);
+                            end
+                        end
+                      
+                        d=plot(t,y,'b');grid on;
+                        title('BIPOLAR AMI');
+                        set(d,'LineWidth',2.5);
+                        hold on;
+                        axis([0 length(h)-1 -1.5 1.5]);
+                        disp('one');
+                         cadenay=[cadenay y];
+                         
+                         
+                        if mod(contadorB,2)==0
+                               disp('El número es Par')
+                               contadorA=contadorA+1;
+                        else
+                            disp('El número es IMPar')
+                         contadorB=contadorB+1;
+                        end
+                         
+                         
+                    end
+                    n=n+1;
+                    
+                    end
+                    
+                    
+                    
+                case 'MANCHESTER D'
+                    %manchesterDiferencial(cadenaBits,tiempo);
+                    n=1;
+                    h=~h;
+                    l=length(h);
+                    h(l+1)=1;
+                    while n<=length(h)-1
+                        t=n-1:tiempo:n;
+                        cadenat=[cadenat n-1:tiempo:n];
+                    if h(n) == 0
+                        if h(n+1)==0 
+                            y=-(t<n)+2*(t<n-0.5)+1*(t==n);
+                        else
+                            y=-(t<n)+2*(t<n-0.5)-1*(t==n);
+                        end
+                        d=plot(t,y,'b');grid on;
+                        title('MANCHESTER DIFERENCIAL');
+                        set(d,'LineWidth',2.5);
+                        hold on;
+                        axis([0 length(h)-1 -1.5 1.5]);
+                        disp('one');
+                        contadorB=contadorB+1;
+                        cadenay=[cadenay y];
+                    else
+                    
+                        if h(n+1)==0
+                            y=(t<n)-2*(t<n-0.5)+1*(t==n);
+                        else
+                            y=(t<n)-2*(t<n-0.5)-1*(t==n);
+                        end
+                     
+                        d=plot(t,y,'b');grid on;
+                        title('MANCHESTER DIFERENCIAL');
+                        set(d,'LineWidth',2.5);
+                        hold on;
+                        axis([0 length(h)-1 -1.5 1.5]);
+                        disp('zero');
+                         contadorA=contadorA+1;
+                         disp(contadorA);
+                         cadenay=[cadenay y];
+                    end
+                    n=n+1;
+                    end
+                               
+                    
+                case 'NRZ-L'   
+                   % nrzl(cadenaBits,tiempo);
+                        
+                        n=1;
+                         
+                        h=~h;
+                         
+                        l=length(h);
+                         
+                        h(l+1)=1;
+                         
+                        while n<=length(h)-1
+                     
+                            t=n-1:tiempo:n;
+                         cadenat=[cadenat n-1:tiempo:n];
+                            if h(n) == 0
+                     
+                                if h(n+1)==0
+                         
+                                    y=-(t<n)-(t==n);
+                         
+                                else
+                         
+                                    y=-(t<n)+(t==n);
+                         
+                                end
+                                  y=y*0.5;
+                                y=y+0.5;
+                                d=plot(t,y,'b');grid on
+                                set(d,'LineWidth',2.5)
+                                hold on
+                                axis([0 length(h)-1 -2 2]);
+                                contadorA=contadorA+1;
+                                disp(contadorA);
+                                cadenay=[cadenay y];
+                                disp('zero');
+                                
+                            else
+                         
+                                if h(n+1)==0
+                         
+                                    y=(t<n)-1*(t==n);
+                         
+                                else
+                         
+                                    y=(t<n)+1*(t==n);
+                         
+                                end
+                                y=y*0.5;
+                                y=y+0.5;
+                                d=plot(t,y,'r');grid on;
+                                plot(app.graficaCodigo,t,y);
+                         
+                                title('NRZ-L', num2str(~h(:).'));
+                                set(d,'LineWidth',2.5);
+                                hold on;
+                                axis([0 length(h)-1 -2 2]);
+                                contadorB=contadorB+1;
+                                cadenay=[cadenay y];
+                                disp('one');
+                                
+                          end 
+                            n=n+1;
+                        end
+%%switch///////////////////////////
+                case 'MANCHESTER'
+
+
+
+
+                otherwise
+                    disp('no hay grafica, por favor seleccione una valida')  
+ %%switch///////////////////////////
+            end
+            %HACER LA GRAFICA DEL CODIGO DE LINEA
+            plot(app.graficaCodigo,cadenat,cadenay);
+            %HACER LA GRAFICA DEL ESPECTRO CON LA FUNCION DEL CODIGO DE
+            %SERIE FOURIER
+            zdouble = fft(cadenay);
+            zdouble = abs(zdouble(1:length(zdouble)/2+1));
+            zdouble=zdouble/(length(zdouble)-1);
+            frqdouble = [0:length(zdouble)-1]*10000/length(zdouble)/2;% Plot spectra of both modulated signals.
+            
+            %SE GRAFICA EL ESPECTRO
+            plot(app.graficaEspectro,frqdouble,zdouble,"Color",'r');
+            %calcular valor intervarlos tiempo
+            tiempo0=contadorA*tiempo;
+            tiempo1=contadorB*tiempo;
+            %mostar tiempo en 1 y 0
+            app.contadorBit1.Value=tiempo1;
+            app.contadorbit0.Value=tiempo0;
+            
+        end
